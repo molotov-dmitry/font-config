@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=Font config
+Comment=Tool for detecting and setting font face, size and scale
+Icon=user 
+Exec=/usr/local/bin/font-config
+Terminal=true
+Type=Application
+AutostartCondition=unless-exists font-config/setup-done
+X-KDE-autostart-condition=font-config/setup-done::autostart:true
