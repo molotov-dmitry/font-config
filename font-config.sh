@@ -286,6 +286,39 @@ readonly scale_schema_marker="com.github.fabiocolacio.marker.preferences.preview
 
 while true
 do
+    ### Show current settings ==================================================
+    
+    echo 'Current settings:'
+    
+    case "${XDG_SESSION_DESKTOP}" in
+    'unity' | 'gnome' | 'gnome-xorg' | 'ubuntu' | 'ubuntu-wayland')
+    
+        echo "  Monospace font face: $(gsettings get $font_schema_gnome  | tr -d "'" | rev | cut -s -d ' ' -f 2- | rev)"
+        echo "  Monospace font size: $(gsettings get $font_schema_gnome  | tr -d "'" | rev | cut -s -d ' ' -f 1  | rev)"
+        echo "  Font scale:          $(gsettings get $scale_schema_gnome | cut -d ' ' -f 1)"
+        
+        ;;
+        
+    'cinnamon' | 'cinnamon2d')
+    
+        echo "  Monospace font face: $(gsettings get $font_schema_gnome     | tr -d "'" | rev | cut -s -d ' ' -f 2- | rev)"
+        echo "  Monospace font size: $(gsettings get $font_schema_gnome     | tr -d "'" | rev | cut -s -d ' ' -f 1  | rev)"
+        echo "  Font scale:          $(gsettings get $scale_schema_cinnamon | cut -d ' ' -f 1)"
+    
+        ;;
+        
+    'KDE')
+    
+        echo "  Monospace font face: $(getconfigline 'fixed' 'General' "$font_file_kde" | cut -d ',' -f 1)"
+        echo "  Monospace font size: $(getconfigline 'fixed' 'General' "$font_file_kde" | cut -d ',' -f 2)"
+        echo "  Font scale:          Unsupported"
+    
+        ;;
+    
+    esac
+    
+    echo
+    
     ### Select new settings ====================================================
 
     newfont="$(selectvalue 'Monospace font' 'Please select font:' "${faces[@]}")"
