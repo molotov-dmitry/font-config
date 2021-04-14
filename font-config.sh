@@ -234,7 +234,7 @@ declare -a scale_list
 
 faces_list=('Ubuntu Mono' 'Fira Code' 'JetBrains Mono' 'Noto Sans Mono' 'Hack' 'Consolas')
 sizes_list=('10' '12' '14' '16' '18')
-scale_list=('1.0' '1.25' '1.5' '2.0')
+scale_list=('1.0' '1.15' '1.2' '1.25' '1.3' '1.4' '1.5' '1.75' '2.0')
 
 #### Get system monospace fonts ================================================
 
