@@ -265,7 +265,7 @@ readarray -t faces < <(for a in "${faces_list[@]}"; do echo "$a"; done | uniq)
 readarray -t sizes < <(for a in "${sizes_list[@]}"; do echo "$a"; done | sort -g | uniq)
 readarray -t scale < <(for a in "${scale_list[@]}"; do echo "$a"; done | sort -g | uniq)
 
-#### Select and apply font =====================================================
+#### Settings shemas and configuration files ===================================
 
 readonly font_schema_gnome="org.gnome.desktop.interface monospace-font-name"
 readonly font_file_kde="${HOME}/.config/kdeglobals"
@@ -284,10 +284,10 @@ readonly scale_schema_libreoffice="/oor:items/item[@oor:path='/org.openoffice.Of
 readonly scale_file_libreoffice="${HOME}/.config/libreoffice/4/user/registrymodifications.xcu"
 readonly scale_schema_marker="com.github.fabiocolacio.marker.preferences.preview preview-zoom-level"
 
-### Apply settings =============================================================
-
 while true
 do
+    ### Select new settings ====================================================
+
     newfont="$(selectvalue 'Monospace font' 'Please select font:' "${faces[@]}")"
     
     if [[ -n "$newfont" ]]
@@ -302,6 +302,8 @@ do
     
     newoptionskde="-1,5,50,0,0,0,0,0"
     newtypekde="Regular"
+    
+    ### Apply new settings =====================================================
     
     if [[ -n "$newfont" && -n "$newsize" && -n "$newscale" ]]
     then
