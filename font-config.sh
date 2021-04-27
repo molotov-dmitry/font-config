@@ -136,6 +136,11 @@ roundscale()
     LC_NUMERIC=C printf "%.1f" "$1" | sed '/\./ s/\.\{0,1\}0\{1,\}$//'
 }
 
+roundscale2()
+{
+    LC_NUMERIC=C printf "%.2f" "$1" | sed '/\./ s/\.\{0,1\}0\{1,\}$//'
+}
+
 roundfloat()
 {
     LC_NUMERIC=C printf "%.0f" "$1" | sed '/\./ s/\.\{0,1\}0\{1,\}$//'
@@ -305,7 +310,7 @@ do
     
         echo "  Monospace font face: $(gsettings get $font_schema_gnome  | tr -d "'" | rev | cut -s -d ' ' -f 2- | rev)"
         echo "  Monospace font size: $(gsettings get $font_schema_gnome  | tr -d "'" | rev | cut -s -d ' ' -f 1  | rev)"
-        echo "  Font scale:          $(gsettings get $scale_schema_gnome | cut -d ' ' -f 1)"
+        echo "  Font scale:          $(roundscale2 "$(gsettings get $scale_schema_gnome | cut -d ' ' -f 1)")"
         
         ;;
         
@@ -313,7 +318,7 @@ do
     
         echo "  Monospace font face: $(gsettings get $font_schema_gnome     | tr -d "'" | rev | cut -s -d ' ' -f 2- | rev)"
         echo "  Monospace font size: $(gsettings get $font_schema_gnome     | tr -d "'" | rev | cut -s -d ' ' -f 1  | rev)"
-        echo "  Font scale:          $(gsettings get $scale_schema_cinnamon | cut -d ' ' -f 1)"
+        echo "  Font scale:          $(roundscale2 "$(gsettings get $scale_schema_cinnamon | cut -d ' ' -f 1)")"
     
         ;;
         
