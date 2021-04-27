@@ -221,6 +221,11 @@ restore_schema()
     fi
 }
 
+cgrep()
+{
+    grep "$@" || test "$?" == 1
+}
+
 #### Globals ===================================================================
 
 unset faces_list
@@ -244,20 +249,25 @@ scale_list=('1.0' '1.15' '1.2' '1.25' '1.3' '1.4' '1.5' '1.75' '2.0')
 
 while read -r displayinfo
 do
-    sizepx="$(echo "${displayinfo}" | grep -o '[[:digit:]]\+x[[:digit:]]\+')"
+    sizepx="$(echo "${displayinfo}" | cgrep -o '[[:digit:]]\+x[[:digit:]]\+' )"
     sizespx=("${sizepx%%x*}" "${sizepx##*x}")
 
-    sizemm=$(echo "${displayinfo}" | grep -o '[[:digit:]]\+mm' | sed 's/mm$//' | tr '\n' 'x' | sed 's/x$//')
+    sizemm=$(echo "${displayinfo}" | cgrep -o '[[:digit:]]\+mm' | sed 's/mm$//' | tr '\n' 'x' | sed 's/x$//')
     sizesmm=("${sizemm%%x*}" "${sizemm##*x}")
 
     for i in 0 1
     do
+        if [[ -z "${sizespx[$i]}" || -z "${sizesmm[$i]}" ]]
+        then
+            continue
+        fi
+    
         scale="$(getscale "${sizespx[$i]}" "${sizesmm[$i]}")"
         
         scale_list+=("$scale")
         scale_list+=("$(roundscale "$scale")")
     done
-done < <(LC_ALL=C xrandr | grep ' connected')
+done < <(LC_ALL=C xrandr | cgrep ' connected')
 
 #### Sort and remove duplicates from lists =====================================
 
