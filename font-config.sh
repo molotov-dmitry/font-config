@@ -108,6 +108,21 @@ function ispkginstalled()
     fi
 }
 
+function pkgversion()
+{
+    app="$1"
+
+    LC_ALL=C dpkg -s "${app}" 2>/dev/null | grep '^Version:' | cut -d ' ' -f 2-
+}
+
+function versioncompare()
+{
+    app="$1"
+    shift
+    
+    dpkg --compare-versions "$(pkgversion "$app")" "$@"
+}
+
 getscale()
 {
     local defaultdpi=96
@@ -396,7 +411,7 @@ do
         
         ## Epiphany browser ----------------------------------------------------
         
-        if ispkginstalled epiphany-browser && ispkginstalled dconf-cli
+        if versioncompare epiphany-browser lt 3.38 && ispkginstalled dconf-cli
         then
             oldscaleepiphany="$(dconf read $scale_schema_epiphany)"
             dconf write $scale_schema_epiphany ${newscale}
@@ -507,7 +522,7 @@ do
             
             ## Epiphany browser ------------------------------------------------
             
-            if ispkginstalled epiphany-browser && ispkginstalled dconf-cli
+            if versioncompare epiphany-browser lt 3.38 && ispkginstalled dconf-cli
             then
                 if [[ -n "${oldscaleepiphany}" ]]
                 then
