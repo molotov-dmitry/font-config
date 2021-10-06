@@ -176,7 +176,7 @@ getconfigline()
 
     if [[ -r "$file" ]]
     then
-        sed -n "/^[ \t]*\[$(safestring "${section}")\]/,/\[/s/^[ \t]*$(safestring "${key}")[ \t]*=[ \t]*//p" "${file}"
+        sed -n "/^[ \t]*\[$(safestring "${section}")\]/,/^[ \t]*\[/s/^[ \t]*$(safestring "${key}")[ \t]*=[ \t]*//p" "${file}"
     fi
 }
 
@@ -307,6 +307,7 @@ readonly font_file_sqlitebrowser="${HOME}/.config/sqlitebrowser/sqlitebrowser.co
 readonly font_file_ghostwriter="${HOME}/.config/ghostwriter/ghostwriter.conf"
 
 readonly scale_schema_gnome="org.gnome.desktop.interface text-scaling-factor"
+readonly scale_file_kde="${HOME}/.config/kcmfonts"
 readonly scale_schema_cinnamon="org.cinnamon.desktop.interface text-scaling-factor"
 readonly scale_schema_dashpanel="org.gnome.shell.extensions.dash-to-dock dash-max-icon-size"
 readonly scale_schema_epiphany="/org/gnome/epiphany/web/default-zoom-level"
@@ -341,7 +342,7 @@ do
     
         echo "  Monospace font face: $(getconfigline 'fixed' 'General' "$font_file_kde" | cut -d ',' -f 1)"
         echo "  Monospace font size: $(getconfigline 'fixed' 'General' "$font_file_kde" | cut -d ',' -f 2)"
-        echo "  Font scale:          Unsupported"
+        echo "  Font scale:          $(roundscale2 $(echo "$(getconfigline 'forceFontDPI' 'General' "$scale_file_kde") / 96" | bc -l))"
     
         ;;
     
@@ -398,6 +399,16 @@ do
             backup_file "$font_file_kde"
             
             addconfigline 'fixed' "${newfont},${newsize},${newoptionskde},${newtypekde}" 'General' "$font_file_kde"
+        fi
+        
+        if [[ -f "$scale_file_kde" ]]
+        then
+            kdefontdpi="$(roundfloat "$(echo "96 * ${newscale}" | bc -l)")"
+            oldkdefontdpi=$(getconfigline 'forceFontDPI' 'General' "$scale_file_kde")
+        
+            backup_file "$scale_file_kde"
+            
+            addconfigline 'forceFontDPI' "${kdefontdpi}" 'General' "$scale_file_kde"
         fi
         
         ## Dash panel ----------------------------------------------------------
@@ -515,6 +526,7 @@ do
             ## KDE -------------------------------------------------------------
             
             restore_file "$font_file_kde"
+            restore_file "$scale_file_kde"
             
             ## Dash panel ------------------------------------------------------
             
