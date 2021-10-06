@@ -322,7 +322,7 @@ do
     echo 'Current settings:'
     
     case "${XDG_SESSION_DESKTOP}" in
-    'unity' | 'gnome' | 'gnome-xorg' | 'ubuntu' | 'ubuntu-wayland')
+    'unity' | 'gnome' | 'gnome-xorg' | 'gnome-wayland' | 'ubuntu' | 'ubuntu-wayland' | 'ubuntu-xorg')
     
         echo "  Monospace font face: $(gsettings get $font_schema_gnome  | tr -d "'" | rev | cut -s -d ' ' -f 2- | rev)"
         echo "  Monospace font size: $(gsettings get $font_schema_gnome  | tr -d "'" | rev | cut -s -d ' ' -f 1  | rev)"
