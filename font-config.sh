@@ -412,7 +412,6 @@ do
         if [[ -f "$scale_file_kde" || -f "$font_file_kde" ]]
         then
             kdefontdpi="$(roundfloat "$(echo "96 * ${newscale}" | bc -l)")"
-            oldkdefontdpi=$(getconfigline 'forceFontDPI' 'General' "$scale_file_kde")
         
             backup_file "$scale_file_kde"
             
