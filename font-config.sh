@@ -173,11 +173,19 @@ getconfigline()
     local key="$1"
     local section="$2"
     local file="$3"
+    local default="$4"
 
     if [[ -r "$file" ]]
     then
-        sed -n "/^[ \t]*\[$(safestring "${section}")\]/,/^[ \t]*\[/s/^[ \t]*$(safestring "${key}")[ \t]*=[ \t]*//p" "${file}"
+        local result="$(sed -n "/^[ \t]*\[$(safestring "${section}")\]/,/^[ \t]*\[/s/^[ \t]*$(safestring "${key}")[ \t]*=[ \t]*//p" "${file}")"
     fi
+
+    if [[ -z "$result" ]]
+    then
+        result="$default"
+    fi
+
+    echo "$result"
 }
 
 addconfigline()
@@ -342,7 +350,7 @@ do
     
         echo "  Monospace font face: $(getconfigline 'fixed' 'General' "$font_file_kde" | cut -d ',' -f 1)"
         echo "  Monospace font size: $(getconfigline 'fixed' 'General' "$font_file_kde" | cut -d ',' -f 2)"
-        echo "  Font scale:          $(roundscale2 $(echo "$(getconfigline 'forceFontDPI' 'General' "$scale_file_kde") / 96" | bc -l))"
+        echo "  Font scale:          $(roundscale2 $(echo "$(getconfigline 'forceFontDPI' 'General' "$scale_file_kde" '96') / 96" | bc -l))"
     
         ;;
     
