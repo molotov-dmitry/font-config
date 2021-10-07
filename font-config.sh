@@ -218,7 +218,7 @@ backup_file()
 {
     local file="$1"
     
-    [[ -f "${file}" ]] && cp -f "${file}" "${file}.old"
+    [[ -f "${file}" ]] && cp -f "${file}" "${file}.old" || true
 }
 
 restore_file()
