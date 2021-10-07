@@ -409,7 +409,7 @@ do
             addconfigline 'fixed' "${newfont},${newsize},${newoptionskde},${newtypekde}" 'General' "$font_file_kde"
         fi
         
-        if [[ -f "$scale_file_kde" ]]
+        if [[ -f "$scale_file_kde" || -f "$font_file_kde" ]]
         then
             kdefontdpi="$(roundfloat "$(echo "96 * ${newscale}" | bc -l)")"
             oldkdefontdpi=$(getconfigline 'forceFontDPI' 'General' "$scale_file_kde")
