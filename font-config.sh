@@ -165,7 +165,7 @@ safestring()
 {
     local inputstr="$1"
 
-    echo "${inputstr}" | sed 's/\\/\\\\/g;s/\//\\\//g'
+    echo "${inputstr}" | sed 's/\\/\\\\/g;s/\//\\\//g;s/\]/\\]/g;s/\[/\\[/g'
 }
 
 getconfigline()
@@ -204,9 +204,9 @@ addconfigline()
         echo "[${section}]" >> "$file"
     fi
 
-    sed -i "/^[[:space:]]*\[${section}\][[:space:]]*$/,/^[[:space:]]*\[.*/{/^[[:space:]]*$(safestring "${key}")[[:space:]]*=/d}" "$file"
+    sed -i "/^[[:space:]]*\[$(safestring "${section}")\][[:space:]]*$/,/^[[:space:]]*\[.*/{/^[[:space:]]*$(safestring "${key}")[[:space:]]*=/d}" "$file"
 
-    sed -i "/\[${section}\]/a $(safestring "${key}=${value}")" "$file"
+    sed -i "/\[$(safestring "${section}")\]/a $(safestring "${key}=${value}")" "$file"
 
     if [[ -n "$(tail -c1 "${file}")" ]]
     then
