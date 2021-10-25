@@ -316,6 +316,7 @@ readonly font_file_ghostwriter="${HOME}/.config/ghostwriter/ghostwriter.conf"
 
 readonly scale_schema_gnome="org.gnome.desktop.interface text-scaling-factor"
 readonly scale_file_kde="${HOME}/.config/kcmfonts"
+readonly scale_file_plasma="${HOME}/.config/plasmashellrc"
 readonly scale_schema_cinnamon="org.cinnamon.desktop.interface text-scaling-factor"
 readonly scale_schema_dashpanel="org.gnome.shell.extensions.dash-to-dock dash-max-icon-size"
 readonly scale_schema_epiphany="/org/gnome/epiphany/web/default-zoom-level"
@@ -416,6 +417,18 @@ do
             backup_file "$scale_file_kde"
             
             addconfigline 'forceFontDPI' "${kdefontdpi}" 'General' "$scale_file_kde"
+        fi
+
+        if [[ -f "$scale_file_plasma" || -f "$font_file_kde" ]]
+        then
+            plasmapanelsize="$(roundfloat "$(echo "36 * ${newscale}" | bc -l)")"
+
+            backup_file "$scale_file_plasma"
+
+            for size in Defaults $(grep -F '[PlasmaViews][Panel 2][' "$scale_file_plasma" | cut -d '[' -f 4 | cut -d ']' -f 1)
+            do
+                addconfigline 'thickness' "$plasmapanelsize" "PlasmaViews][Panel 2][$size" "$scale_file_plasma"
+            done
         fi
         
         ## Dash panel ----------------------------------------------------------
@@ -534,6 +547,7 @@ do
             
             restore_file "$font_file_kde"
             restore_file "$scale_file_kde"
+            restore_file "$scale_file_plasma"
             
             ## Dash panel ------------------------------------------------------
             
