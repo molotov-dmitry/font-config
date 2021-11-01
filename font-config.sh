@@ -131,7 +131,7 @@ getscale()
     
     if [[ $sizepx -le 0 ]] || [[ $sizemm -le 0 ]]
     then
-        return 1
+        return 0
     fi
     
     local dpi="$(echo "${sizepx} / (${sizemm} / 25.4)" | bc -l)"
@@ -140,7 +140,7 @@ getscale()
     
     if [[ -z "$scale" || "$scale" == '0' ]]
     then
-        return 1
+        return 0
     fi
     
     echo "${scale}"
@@ -292,8 +292,11 @@ do
     
         scale="$(getscale "${sizespx[$i]}" "${sizesmm[$i]}")"
         
-        scale_list+=("$scale")
-        scale_list+=("$(roundscale "$scale")")
+        if [[ -n "$scale" ]]
+        then
+            scale_list+=("$scale")
+            scale_list+=("$(roundscale "$scale")")
+        fi
     done
 done < <(LC_ALL=C xrandr | cgrep ' connected')
 
