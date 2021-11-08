@@ -108,6 +108,13 @@ function ispkginstalled()
     fi
 }
 
+function isextensioninstalled()
+{
+    ext="$1"
+    
+    test -d "/usr/share/gnome-shell/extensions/${ext}" || test -d "${HOME}/.local/share/gnome-shell/extensions/${ext}"
+}
+
 function pkgversion()
 {
     app="$1"
@@ -321,7 +328,7 @@ readonly scale_schema_gnome="org.gnome.desktop.interface text-scaling-factor"
 readonly scale_file_kde="${HOME}/.config/kcmfonts"
 readonly scale_file_plasma="${HOME}/.config/plasmashellrc"
 readonly scale_schema_cinnamon="org.cinnamon.desktop.interface text-scaling-factor"
-readonly scale_schema_dashpanel="org.gnome.shell.extensions.dash-to-dock dash-max-icon-size"
+readonly scale_schema_dashpanel="/org/gnome/shell/extensions/dash-to-dock/dash-max-icon-size"
 readonly scale_schema_epiphany="/org/gnome/epiphany/web/default-zoom-level"
 readonly scale_schema_libreoffice="/oor:items/item[@oor:path='/org.openoffice.Office.Common/Misc']/prop[@oor:name='SymbolStyle']/value"
 readonly scale_file_libreoffice="${HOME}/.config/libreoffice/4/user/registrymodifications.xcu"
@@ -436,11 +443,11 @@ do
         
         ## Dash panel ----------------------------------------------------------
         
-        if gsettings writable $scale_schema_dashpanel 1>/dev/null 2>/dev/null
+        if ( isextensioninstalled 'dash-to-dock@micxgx.gmail.com' || isextensioninstalled 'ubuntu-dock@ubuntu.com' ) && ispkginstalled dconf-cli
         then
             iconsize="$(roundfloat "$(echo "48 * ${newscale}" | bc -l)")"
-            oldsizedashpanel="$(gsettings get $scale_schema_dashpanel)"
-            gsettings set $scale_schema_dashpanel ${iconsize}
+            oldsizedashpanel="$(dconf read $scale_schema_dashpanel)"
+            dconf write $scale_schema_dashpanel ${iconsize}
         fi
         
         ## Epiphany browser ----------------------------------------------------
@@ -554,7 +561,15 @@ do
             
             ## Dash panel ------------------------------------------------------
             
-            restore_schema "$scale_schema_dashpanel" "${oldsizedashpanel}"
+            if  ( isextensioninstalled 'dash-to-dock@micxgx.gmail.com' || isextensioninstalled 'ubuntu-dock@ubuntu.com' ) && ispkginstalled dconf-cli
+            then
+                if [[ -n "${oldsizedashpanel}" ]]
+                then
+                    dconf write $scale_schema_dashpanel ${oldsizedashpanel}
+                else
+                    dconf reset $scale_schema_dashpanel
+                fi
+            fi
             
             ## Epiphany browser ------------------------------------------------
             
