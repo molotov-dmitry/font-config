@@ -318,6 +318,7 @@ readarray -t scale < <(for a in "${scale_list[@]}"; do echo "$a"; done | sort -g
 readonly font_schema_gnome="org.gnome.desktop.interface monospace-font-name"
 readonly font_file_kde="${HOME}/.config/kdeglobals"
 readonly font_schema_builder="org.gnome.builder.editor font-name"
+readonly font_schema_builder_term="org.gnome.builder.terminal font-name"
 readonly font_file_qtcreator="${HOME}/.config/QtProject/QtCreator.ini"
 readonly font_file_konsole="${HOME}/.local/share/konsole/UTF-8.profile"
 readonly font_file_kate="${HOME}/.config/kateschemarc"
@@ -482,6 +483,12 @@ do
             gsettings set $font_schema_builder "${newfont} ${newsize}"
         fi
         
+        if gsettings writable $font_schema_builder_term 1>/dev/null 2>/dev/null
+        then
+            oldfontbuilderterm="$(gsettings get $font_schema_builder_term)"
+            gsettings set $font_schema_builder_term "${newfont} ${newsize}"
+        fi
+        
         ## Qt Creator ----------------------------------------------------------
         
         if ispkginstalled qtcreator
@@ -590,6 +597,7 @@ do
             ## Gnome Builder ---------------------------------------------------
             
             restore_schema "$font_schema_builder" "${oldfontbuilder}"
+            restore_schema "$font_schema_builder_term" "${oldfontbuilderterm}"
             
             ## Qt Creator ------------------------------------------------------
             
