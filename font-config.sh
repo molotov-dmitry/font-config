@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+set +m
 
 TARGET='font-config'
 
@@ -261,6 +262,41 @@ cgrep()
     grep "$@" || test "$?" == 1
 }
 
+function jqexec()
+{
+    local file="$1"
+    local query="$2"
+    
+    shift
+    shift
+    
+    jq "$@" "${query}" "${file}" > "${file}.new" && mv "${file}.new" "${file}"
+}
+
+function jqreplace()
+{
+    local file="$1"
+    
+    shift
+    
+    local query=''
+    
+    for var in "${@}"
+    do
+        if [[ -n "${query}" ]]
+        then
+            query="${query} | ${var}"
+        else
+            query="${var}"
+        fi
+    done
+    
+    mkdir -p "$(dirname "${file}")"
+    test -s "${file}" || echo '{}' > "${file}"
+
+    jqexec "${file}" "${query}" -c
+}
+
 #### Globals ===================================================================
 
 unset faces_list
@@ -272,13 +308,29 @@ declare -a sizes_list
 unset scale_list
 declare -a scale_list
 
+readonly FONT_DEFAULT='Liberation Serif'
+readonly FONT_SERIF='Liberation Serif'
+readonly FONT_SANS='Cantarell'
+readonly FONT_MONO='JetBrains Mono'
+
 faces_list=('Ubuntu Mono' 'Fira Code' 'JetBrains Mono' 'Hack' 'Consolas' 'Cascadia Code')
 sizes_list=('10' '12' '14' '16' '18')
 scale_list=('1.0' '1.15' '1.2' '1.25' '1.3' '1.4' '1.5' '1.75' '2.0')
 
 #### Get system monospace fonts ================================================
 
-# TODO
+if which dconf >/dev/null 2>/dev/null
+then
+    font_default="$(dconf read /org/gnome/desktop/interface/document-font-name | cut -d "'" -f 2 | sed 's/ [0-9]*$//')"
+    font_serif="$(dconf read /org/gnome/desktop/interface/document-font-name | cut -d "'" -f 2 | sed 's/ [0-9]*$//')"
+    font_sans="$(dconf read /org/gnome/desktop/interface/font-name | cut -d "'" -f 2 | sed 's/ [0-9]*$//')"
+    font_mono="$(dconf read /org/gnome/desktop/interface/monospace-font-name | cut -d "'" -f 2 | sed 's/ [0-9]*$//')"
+    
+    font_default="${font_default:-${FONT_DEFAULT}}"
+    font_serif="${font_serif:-${FONT_SERIF}}"
+    font_sans="${font_sans:-${FONT_SANS}}"
+    font_mono="${font_mono:-${FONT_MONO}}"
+fi
 
 #### Get displays DPI list =====================================================
 
@@ -324,6 +376,8 @@ readonly font_file_konsole="${HOME}/.local/share/konsole/UTF-8.profile"
 readonly font_file_kate="${HOME}/.config/kateschemarc"
 readonly font_file_sqlitebrowser="${HOME}/.config/sqlitebrowser/sqlitebrowser.conf"
 readonly font_file_ghostwriter="${HOME}/.config/ghostwriter/ghostwriter.conf"
+readonly font_file_google_chrome="${HOME}/.config/google-chrome/Default/Preferences"
+readonly font_file_chromium="${HOME}/.config/chromium/Default/Preferences"
 
 readonly scale_schema_gnome="org.gnome.desktop.interface text-scaling-factor"
 readonly scale_file_kde="${HOME}/.config/kcmfonts"
@@ -334,6 +388,11 @@ readonly scale_schema_epiphany="/org/gnome/epiphany/web/default-zoom-level"
 readonly scale_schema_libreoffice="/oor:items/item[@oor:path='/org.openoffice.Office.Common/Misc']/prop[@oor:name='SymbolStyle']/value"
 readonly scale_file_libreoffice="${HOME}/.config/libreoffice/4/user/registrymodifications.xcu"
 readonly scale_schema_marker="com.github.fabiocolacio.marker.preferences.preview preview-zoom-level"
+
+readonly font_path_default='.webkit.webprefs.fonts.standard.Zyyy'
+readonly font_path_serif='.webkit.webprefs.fonts.serif.Zyyy'
+readonly font_path_sans='.webkit.webprefs.fonts.sansserif.Zyyy'
+readonly font_path_mono='.webkit.webprefs.fonts.fixed.Zyyy'
 
 while true
 do
@@ -545,6 +604,108 @@ do
             gsettings set $scale_schema_marker ${newscale}
         fi
         
+        ## Google Chrome -------------------------------------------------------
+        
+        if which google-chrome >/dev/null
+        then
+            if [[ ! -s "$font_file_google_chrome" ]]
+            then
+                google-chrome &
+                         
+                chromepid="$!"
+                
+                while ps -p $chromepid > /dev/null
+                do
+                    if true
+                    then
+                        for i in {1..5}
+                        do
+                            if  [[ -s "$font_file_google_chrome" ]]
+                            then
+                                sleep 1
+                                break
+                            fi
+                            
+                            sleep 1
+                        done
+                        
+                        kill $chromepid 2>/dev/null
+                        break
+                    fi
+                done
+                
+                for i in {1..5}
+                do
+                    if  [[ -s "$font_file_google_chrome" ]]
+                    then
+                        sleep 1
+                        break
+                    fi
+                    
+                    sleep 1
+                done
+            fi
+        
+            backup_file "$font_file_google_chrome"
+            
+            jqreplace "$font_file_google_chrome" \
+                      "${font_path_default}=\"${font_default}\"" \
+                      "${font_path_serif}=\"${font_serif}\"" \
+                      "${font_path_sans}=\"${font_sans}\"" \
+                      "${font_path_mono}=\"${font_mono}\""
+        fi
+        
+        ## Chromium ------------------------------------------------------------
+        
+        if which chromium >/dev/null
+        then
+            if [[ ! -s "$font_file_chromium" ]]
+            then
+                chromium &
+                         
+                chromiumpid="$!"
+                
+                while ps -p $chromiumpid > /dev/null
+                do
+                    if true
+                    then
+                        for i in {1..5}
+                        do
+                            if  [[ -s "$font_file_chromium" ]]
+                            then
+                                sleep 1
+                                break
+                            fi
+                            
+                            sleep 1
+                        done
+                        
+                        kill $chromiumpid 2>/dev/null
+                        break
+                    fi
+                done
+                
+                for i in {1..5}
+                do
+                    if  [[ -s "$font_file_chromium" ]]
+                    then
+                        sleep 1
+                        break
+                    fi
+                    
+                    sleep 1
+                done
+            fi
+        
+            backup_file "$font_file_chromium"
+            
+            jqreplace "$font_file_chromium" \
+                      "${font_path_default}=\"${font_default}\"" \
+                      "${font_path_serif}=\"${font_serif}\"" \
+                      "${font_path_sans}=\"${font_sans}\"" \
+                      "${font_path_mono}=\"${font_mono}\""
+        fi
+        
         ## ---------------------------------------------------------------------
         
         if showquestion "Save these settings?" "save" "try another"
@@ -622,6 +783,14 @@ do
             ## Marker ----------------------------------------------------------
             
             restore_schema "$scale_schema_marker" "${oldscalemarker}"
+            
+            ## Google Chrome ---------------------------------------------------
+            
+            restore_file "$font_file_google_chrome"
+            
+            ## Chromium --------------------------------------------------------
+            
+            restore_file "$font_file_chromium"
             
             ## -----------------------------------------------------------------
             
