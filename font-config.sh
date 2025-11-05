@@ -14,8 +14,11 @@ showmessage()
     then
         echo "${message}"
         read -p "Press [Enter] to continue"
-    else
+    elif [[ -n "$(which zenity)" ]]
+    then
         zenity --info --width 400 --text="${message}"
+    else
+        exit 1
     fi
 }
 
@@ -39,13 +42,16 @@ showquestion()
                 return 1
             fi
         done
-    else
+    elif [[ -n "$(which zenity)" ]]
+    then
         if zenity --question --width 400 --text="${message}"
         then
             return 0
         else
             return 1
         fi
+    else
+        exit 1
     fi
 }
 
@@ -74,7 +80,8 @@ selectvalue()
                 continue
             fi
         done
-    else
+    elif [[ -n "$(which zenity)" ]]
+    then
         while true
         do
             result=$(zenity --title="$title" --text="$prompt" --list --column="Options" "$@") || break
@@ -83,6 +90,8 @@ selectvalue()
                 break
             fi
         done
+    else
+        exit 1
     fi
     
     echo "$result"
