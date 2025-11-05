@@ -291,30 +291,33 @@ scale_list=('1.0' '1.15' '1.2' '1.25' '1.3' '1.4' '1.5' '1.75' '2.0')
 
 #### Get displays DPI list =====================================================
 
-while read -r displayinfo
-do
-    sizepx="$(echo "${displayinfo}" | cgrep -o '[[:digit:]]\+x[[:digit:]]\+' )"
-    sizespx=("${sizepx%%x*}" "${sizepx##*x}")
-
-    sizemm=$(echo "${displayinfo}" | cgrep -o '[[:digit:]]\+mm' | sed 's/mm$//' | tr '\n' 'x' | sed 's/x$//')
-    sizesmm=("${sizemm%%x*}" "${sizemm##*x}")
-
-    for i in 0 1
+if [[ -n "$(which xrandr)" ]]
+then
+    while read -r displayinfo
     do
-        if [[ -z "${sizespx[$i]}" || -z "${sizesmm[$i]}" ]]
-        then
-            continue
-        fi
-    
-        scale="$(getscale "${sizespx[$i]}" "${sizesmm[$i]}")"
+        sizepx="$(echo "${displayinfo}" | cgrep -o '[[:digit:]]\+x[[:digit:]]\+' )"
+        sizespx=("${sizepx%%x*}" "${sizepx##*x}")
+
+        sizemm=$(echo "${displayinfo}" | cgrep -o '[[:digit:]]\+mm' | sed 's/mm$//' | tr '\n' 'x' | sed 's/x$//')
+        sizesmm=("${sizemm%%x*}" "${sizemm##*x}")
+
+        for i in 0 1
+        do
+            if [[ -z "${sizespx[$i]}" || -z "${sizesmm[$i]}" ]]
+            then
+                continue
+            fi
         
-        if [[ -n "$scale" ]]
-        then
-            scale_list+=("$scale")
-            scale_list+=("$(roundscale "$scale")")
-        fi
-    done
-done < <(LC_ALL=C xrandr | cgrep ' connected')
+            scale="$(getscale "${sizespx[$i]}" "${sizesmm[$i]}")"
+            
+            if [[ -n "$scale" ]]
+            then
+                scale_list+=("$scale")
+                scale_list+=("$(roundscale "$scale")")
+            fi
+        done
+    done < <(LC_ALL=C xrandr | cgrep ' connected')
+fi
 
 #### Sort and remove duplicates from lists =====================================
 
